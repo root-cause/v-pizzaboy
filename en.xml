@@ -1,0 +1,16 @@
+<Root>
+  <STORE_NAME>Pizza This</STORE_NAME>
+  <JOB_MARKER_TEXT>Press {0} to start pizza delivery job.</JOB_MARKER_TEXT>
+  <COME_WITHOUT_VEHICLE>You need to leave your vehicle to start pizza delivery job.</COME_WITHOUT_VEHICLE>
+  <JOB_KEYS_TEXT>{0} to cancel pizza delivery.~n~{1} to throw a box to left.~n~{2} to throw a box to right.~n~Come back when you're out of pizzas.</JOB_KEYS_TEXT>
+  <CUSTOMER_NAME>Hungry Customer</CUSTOMER_NAME>
+  <MISSION_TIME>Time Left: {0:D2}:{1:D2}</MISSION_TIME>
+  <BOX_COUNT>Pizzas Left: {0}</BOX_COUNT>
+  <RETURN_TO_STORE_OUT>You have thrown all your pizzas, return to the ~HUD_COLOUR_GREENDARK~restaurant ~w~to get more.</RETURN_TO_STORE_OUT>
+  <RETURN_TO_STORE_DONE>You have delivered all your pizzas, return to the ~HUD_COLOUR_GREENDARK~restaurant ~w~for more orders.</RETURN_TO_STORE_DONE>
+  <COME_WITH_SCRIPT_VEHICLE>Come back with the vehicle we gave you.</COME_WITH_SCRIPT_VEHICLE>
+  <GO_DELIVER>These pizzas won't deliver themselves, get moving!</GO_DELIVER>
+  <DELIVERED>Pizza delivered, earned ~g~${0}.</DELIVERED>
+  <TIMEOUT>Ran out of time!</TIMEOUT>
+  <DELIVERY_CANCELLED>Pizza delivery cancelled!</DELIVERY_CANCELLED>
+</Root>
