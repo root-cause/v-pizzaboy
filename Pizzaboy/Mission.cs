@@ -263,6 +263,65 @@ namespace Pizzaboy
                 }
             }
         }
+
+        public void Start()
+        {
+            if (!Methods.CanUseMarkers() || Game.Player.Character.IsInVehicle()) return;
+
+            int closest = Methods.FindClosestStore(Game.Player.Character.Position);
+            if (closest == -1) return;
+
+            Game.FadeScreenOut(Constants.WaitTime);
+            Script.Wait(Constants.WaitTime);
+
+            PlayerHandle = Game.Player.Character.Handle;
+            Vehicle = World.CreateVehicle(Main.DeliveryVehicleModel, Game.Player.Character.Position, Game.Player.Character.Heading);
+            Vehicle.PrimaryColor = VehicleColor.MetallicGreen;
+            Vehicle.SecondaryColor = VehicleColor.MetallicRed;
+            Game.Player.Character.SetIntoVehicle(Vehicle, VehicleSeat.Driver);
+
+            SpawnCustomers(Main.MaxCustomers);
+
+            for (int i = 0, max = Main.StoreBlips.Count; i < max; i++)
+            {
+                if (i == closest) continue;
+                Main.StoreBlips[i].Alpha = 0;
+            }
+
+            ShowInfoUntil = Game.GameTime + Constants.SubtitleTime;
+            JobEndTime = Game.GameTime + (Main.JobSeconds * 1000);
+            StoreID = closest;
+            BoxCount = Main.BoxCount;
+            IsRunning = true;
+
+            UI.ShowSubtitle(Localization.Get("GO_DELIVER"), Constants.SubtitleTime);
+            Game.FadeScreenIn(Constants.WaitTime);
+        }
+
+        public void Stop()
+        {
+            Game.FadeScreenOut(Constants.WaitTime);
+            Script.Wait(Constants.WaitTime);
+
+            IsRunning = false;
+            Game.FadeScreenIn(Constants.WaitTime);
+
+            UI.ShowSubtitle(Localization.Get("DELIVERY_CANCELLED"), Constants.SubtitleTime);
+        }
+
+        public void ThrowBox(bool toLeft)
+        {
+            if (_isRunning && Box == null && Game.Player.Character.IsInVehicle() && _boxCount > 0)
+            {
+                LastThrowSuccessful = false;
+
+                Box = World.CreateProp(Constants.PropName, Game.Player.Character.GetOffsetInWorldCoords(new Vector3((toLeft ? -1.0f : 1.0f), 0.5f, 0.15f)), new Vector3(0f, 0f, Game.Player.Character.Rotation.Z + (toLeft ? -90f : 90f)), true, false);
+                Box.ApplyForce((toLeft ? -Game.Player.Character.RightVector : Game.Player.Character.RightVector) * 10.0f);
+
+                BoxCount--;
+                BoxThrowTime = Game.GameTime;
+            }
+        }
         #endregion
     }
 }

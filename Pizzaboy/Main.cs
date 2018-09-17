@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Drawing;
-using System.Windows.Forms;
 using System.Linq;
 using System.Xml.Linq;
 using System.Collections.Generic;
@@ -15,17 +14,18 @@ namespace Pizzaboy
     public class Main : Script
     {
         #region Settings
-        Keys JobToggleKey = Keys.F4;
-        Keys ThrowLeftKey = Keys.NumPad4;
-        Keys ThrowRightKey = Keys.NumPad6;
-        VehicleHash DeliveryVehicleModel = VehicleHash.Faggio2;
-        bool CustomerMarkers = true;
-        int JobSeconds = 300;
-        int MaxCustomers = 10;
-        int BoxCount = 5;
+        int JobToggleKey = 176;
+        int ThrowLeftKey = 174;
+        int ThrowRightKey = 175;
+
+        public static VehicleHash DeliveryVehicleModel = VehicleHash.Faggio2;
+        public static bool CustomerMarkers = true;
+        public static int JobSeconds = 300;
+        public static int MaxCustomers = 10;
+        public static int BoxCount = 5;
         public static int RewardBase = 10;
         public static int RewardMax = 30;
-        string Language = "en";
+        public static string Language = "en";
         #endregion
 
         public static Random RNG = new Random();
@@ -57,9 +57,9 @@ namespace Pizzaboy
 
                 if (File.Exists(settingsFilePath))
                 {
-                    JobToggleKey = config.GetValue("SETTINGS", "JobToggleKey", Keys.F4);
-                    ThrowLeftKey = config.GetValue("SETTINGS", "ThrowLKey", Keys.NumPad4);
-                    ThrowRightKey = config.GetValue("SETTINGS", "ThrowRKey", Keys.NumPad6);
+                    JobToggleKey = config.GetValue("SETTINGS", "JobToggleKey", 176);
+                    ThrowLeftKey = config.GetValue("SETTINGS", "ThrowLKey", 174);
+                    ThrowRightKey = config.GetValue("SETTINGS", "ThrowRKey", 175);
                     DeliveryVehicleModel = config.GetValue("SETTINGS", "VehModel", VehicleHash.Faggio2);
                     CustomerMarkers = config.GetValue("SETTINGS", "CustomerMarkers", true);
                     JobSeconds = config.GetValue("SETTINGS", "JobSeconds", 300);
@@ -118,7 +118,6 @@ namespace Pizzaboy
 
             // Set up events
             Tick += ScriptTick;
-            KeyUp += ScriptKeyUp;
             Aborted += ScriptAborted;
         }
         #endregion
@@ -161,7 +160,7 @@ namespace Pizzaboy
                 }
 
                 // Display script keys
-                if (gameTime < Handler.ShowInfoUntil) Methods.DisplayHelpText(Localization.Get("JOB_KEYS_TEXT", JobToggleKey, ThrowLeftKey, ThrowRightKey));
+                if (gameTime < Handler.ShowInfoUntil) Methods.DisplayHelpText(Localization.Get("JOB_KEYS_TEXT", HelpTextKeys.Get(JobToggleKey), HelpTextKeys.Get(ThrowLeftKey), HelpTextKeys.Get(ThrowRightKey)));
 
                 // Draw job info
                 Handler.DrawInfo();
@@ -194,6 +193,20 @@ namespace Pizzaboy
                     // Update last run timestamp
                     Handler.LastRun = gameTime;
                 }
+
+                // Control check
+                if (Game.IsControlJustPressed(2, (Control)ThrowLeftKey))
+                {
+                    Handler.ThrowBox(true);
+                }
+                else if (Game.IsControlJustPressed(2, (Control)ThrowRightKey))
+                {
+                    Handler.ThrowBox(false);
+                }
+                else if (Game.IsControlJustPressed(2, (Control)JobToggleKey))
+                {
+                    Handler.Stop();
+                }
             }
             else
             {
@@ -211,7 +224,10 @@ namespace Pizzaboy
                             {
                                 if (!playerPed.IsInVehicle())
                                 {
-                                    Methods.DisplayHelpText(Localization.Get("JOB_MARKER_TEXT", JobToggleKey));
+                                    Methods.DisplayHelpText(Localization.Get("JOB_MARKER_TEXT", HelpTextKeys.Get(JobToggleKey)));
+
+                                    // Control check
+                                    if (Game.IsControlJustPressed(2, (Control)JobToggleKey)) Handler.Start();
                                 }
                                 else
                                 {
@@ -220,92 +236,6 @@ namespace Pizzaboy
                             }
                         }
                     }
-                }
-            }
-        }
-        #endregion
-
-        #region Event: KeyUp
-        public void ScriptKeyUp(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == JobToggleKey)
-            {
-                if (Handler.IsRunning)
-                {
-                    Game.FadeScreenOut(Constants.WaitTime);
-                    Wait(Constants.WaitTime);
-
-                    Handler.IsRunning = false;
-                    Game.FadeScreenIn(Constants.WaitTime);
-
-                    UI.ShowSubtitle(Localization.Get("DELIVERY_CANCELLED"), Constants.SubtitleTime);
-                }
-                else
-                {
-                    if (!Methods.CanUseMarkers() || Game.Player.Character.IsInVehicle()) return;
-
-                    int closest = Methods.FindClosestStore(Game.Player.Character.Position);
-                    if (closest == -1) return;
-
-                    Game.FadeScreenOut(Constants.WaitTime);
-                    Wait(Constants.WaitTime);
-
-                    // Create player vehicle
-                    Handler.PlayerHandle = Game.Player.Character.Handle;
-                    Handler.Vehicle = World.CreateVehicle(DeliveryVehicleModel, Game.Player.Character.Position, Game.Player.Character.Heading);
-                    Handler.Vehicle.PrimaryColor = VehicleColor.MetallicGreen;
-                    Handler.Vehicle.SecondaryColor = VehicleColor.MetallicRed;
-                    Game.Player.Character.SetIntoVehicle(Handler.Vehicle, VehicleSeat.Driver);
-
-                    // Spawn customers
-                    Handler.SpawnCustomers(MaxCustomers);
-
-                    // Hide all store blips except the store that gave us the boxes
-                    for (int i = 0, max = StoreBlips.Count; i < max; i++)
-                    {
-                        if (i == closest) continue;
-                        StoreBlips[i].Alpha = 0;
-                    }
-
-                    // Other stuff
-                    Handler.ShowInfoUntil = Game.GameTime + Constants.SubtitleTime;
-                    Handler.JobEndTime = Game.GameTime + (JobSeconds * 1000);
-                    Handler.StoreID = closest;
-                    Handler.BoxCount = BoxCount;
-                    Handler.IsRunning = true;
-
-                    UI.ShowSubtitle(Localization.Get("GO_DELIVER"), Constants.SubtitleTime);
-                    Game.FadeScreenIn(Constants.WaitTime);
-                }
-            }
-
-            if (e.KeyCode == ThrowLeftKey)
-            {
-                // Throw a pizza box to left
-                if (Handler.IsRunning && Handler.Box == null && Game.Player.Character.IsInVehicle(Handler.Vehicle) && Handler.BoxCount > 0)
-                {
-                    Handler.LastThrowSuccessful = false;
-
-                    Handler.Box = World.CreateProp(Constants.PropName, Game.Player.Character.GetOffsetInWorldCoords(new Vector3(-1.0f, 0.5f, 0.15f)), new Vector3(0f, 0f, Game.Player.Character.Rotation.Z - 90f), true, false);
-                    Handler.Box.ApplyForce(-Game.Player.Character.RightVector * 10.0f);
-
-                    Handler.BoxCount--;
-                    Handler.BoxThrowTime = Game.GameTime;
-                }
-            }
-
-            if (e.KeyCode == ThrowRightKey)
-            {
-                // Throw a pizza box to right
-                if (Handler.IsRunning && Handler.Box == null && Game.Player.Character.IsInVehicle(Handler.Vehicle) && Handler.BoxCount > 0)
-                {
-                    Handler.LastThrowSuccessful = false;
-
-                    Handler.Box = World.CreateProp(Constants.PropName, Game.Player.Character.GetOffsetInWorldCoords(new Vector3(1.0f, 0.5f, 0.15f)), new Vector3(0f, 0f, Game.Player.Character.Rotation.Z + 90f), true, false);
-                    Handler.Box.ApplyForce(Game.Player.Character.RightVector * 10.0f);
-
-                    Handler.BoxCount--;
-                    Handler.BoxThrowTime = Game.GameTime;
                 }
             }
         }
