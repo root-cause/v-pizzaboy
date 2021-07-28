@@ -1,0 +1,16 @@
+<Root>
+  <STORE_NAME>比萨</STORE_NAME>
+  <JOB_MARKER_TEXT>按 {0} 开始送货任务。</JOB_MARKER_TEXT>
+  <COME_WITHOUT_VEHICLE>你需要离开你的车开始送货任务。</COME_WITHOUT_VEHICLE>
+  <JOB_KEYS_TEXT>{0} 取消比萨送货。~n~{1} 向左扔一个盒子。~n~{2} 向右扔一个盒子.~n~当你吃完比萨饼时回来。</JOB_KEYS_TEXT>
+  <CUSTOMER_NAME>饥饿的顾客</CUSTOMER_NAME>
+  <MISSION_TIME>时间剩下: {0:D2}:{1:D2}</MISSION_TIME>
+  <BOX_COUNT>比萨剩下: {0}</BOX_COUNT>
+  <RETURN_TO_STORE_OUT>你扔掉了所有的披萨，回到 ~HUD_COLOUR_GREENDARK~餐厅 ~w~拿跟多。</RETURN_TO_STORE_OUT>
+  <RETURN_TO_STORE_DONE>您已交付所有比萨饼，请返回 ~HUD_COLOUR_GREENDARK~餐厅 ~w~其他订单。</RETURN_TO_STORE_DONE>
+  <COME_WITH_SCRIPT_VEHICLE>带着我们给你的车回来。</COME_WITH_SCRIPT_VEHICLE>
+  <GO_DELIVER>这些比萨饼不会自己送出去，动起来吧！</GO_DELIVER>
+  <DELIVERED>比萨交付，赚取 ~g~${0}。</DELIVERED>
+  <TIMEOUT>没时间了!</TIMEOUT>
+  <DELIVERY_CANCELLED>比萨送货取消!</DELIVERY_CANCELLED>
+</Root>
